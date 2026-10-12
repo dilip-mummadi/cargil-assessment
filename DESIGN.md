@@ -1,0 +1,7 @@
+# Design Notes
+
+The API loads the supplied 50,000-row CSV once into an in-memory read model. This keeps the assessment runnable without infrastructure while avoiding repeated file reads; at this size, filtering and aggregation over the in-memory collection are inexpensive. The CSV remains the source of truth and is copied beside the API output during build. For a larger or frequently refreshed dataset, PostgreSQL would provide durable storage and indexed filtering; OpenSearch would be a better fit if fuzzy counterparty/commodity search became a primary workflow. I would index exact facets and dates, use analyzed fields for text search, and aggregate on keyword fields.
+
+AG Grid Community uses the Infinite Row Model with bounded blocks and a small cache. The API owns filtering and sorting, and summaries reuse the same filters while aggregating every matching row. Commodity summaries include net position because quantities are meaningful within a commodity. Book summaries deliberately omit a position total because books can combine commodities with different units. P&L and FX exposure remain available for both groupings.
+
+With more time, I would add API and UI tests around filter parity and summary totals, saved column state, server-side date filters, and a CI build. The current trade detail panel is a focused row drilldown; group drilldown applies the selected group as an API filter.
